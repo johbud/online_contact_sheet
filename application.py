@@ -1,5 +1,5 @@
 from flask import Flask, request
-app = Flas(__name__)
+app = Flask(__name__)
 
 @app_route('/', methods=["GET"])
 def index():
