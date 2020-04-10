@@ -142,9 +142,10 @@ def sheet_view(sheet_id):
     if not images:
         return render_template("404.html")
 
-    url_root = Config.S3_URL
+    s3_url_root = Config.S3_URL
+    app_url_root = request.url_root
 
-    return render_template("contactsheet_main.html", images=images, sheet=sheet, url_root=url_root, active_index=1)
+    return render_template("contactsheet_main.html", images=images, sheet=sheet, s3_url_root=s3_url_root, app_url_root=app_url_root, active_index=1)
 
 @app.route("/sheet/<sheet_id>/<selected_index>")
 def sheet_view_selected(sheet_id, selected_index):
@@ -155,11 +156,12 @@ def sheet_view_selected(sheet_id, selected_index):
     if not images:
         return render_template("404.html")
 
-    url_root = request.url_root
+    s3_url_root = Config.S3_URL
+    app_url_root = request.url_root
 
     active_index = int(selected_index)
 
-    return render_template("contactsheet_main.html", images=images, sheet=sheet, url_root=url_root, active_index=active_index)
+    return render_template("contactsheet_main.html", images=images, sheet=sheet, s3_url_root=s3_url_root, app_url_root=app_url_root, active_index=active_index)
 
 
 @app.route("/sheet/overview/<sheet_id>")
@@ -171,9 +173,10 @@ def sheet_overview(sheet_id):
     if not images or not sheet:
         return render_template("404.html")
 
-    url_root = request.url_root
+    s3_url_root = Config.S3_URL
+    app_url_root = request.url_root
 
-    return render_template("contactsheet_overview.html", images=images, sheet=sheet, url_root=url_root)
+    return render_template("contactsheet_overview.html", images=images, sheet=sheet, s3_url_root=s3_url_root, app_url_root=app_url_root)
 
 @app.route("/logout")
 def logout():

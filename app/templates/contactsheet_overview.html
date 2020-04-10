@@ -10,12 +10,12 @@
 
       <div class="col m-3 p-2 border border-light">
         <div class="mx-auto d-block" style="height:200px">
-          <a href="{{ url_root + "sheet/" + sheet.uuid + "/" + loop.index|string }}">
-            <img src="{{ image.path }}" style="height:100%; width:100%; object-fit: contain;" alt="...">
+          <a href="{{ app_url_root + "sheet/" + sheet.uuid + "/" + loop.index|string }}">
+            <img src="{{ s3_url_root + image.path }}" style="height:100%; width:100%; object-fit: contain;" alt="...">
           </a>
         </div>
         <div class="pt-2">
-          <p class="text-center"><a class="text-light" href="{{ url_root + "sheet/" + sheet.uuid + "/" + loop.index|string }}">{{ image.name }}</a></p>
+          <p class="text-center"><a class="text-light" href="{{ app_url_root + "sheet/" + sheet.uuid + "/" + loop.index|string }}">{{ image.name }}</a></p>
         </div>
       </div>
 
