@@ -1,1 +1,1 @@
-web: gunicorn online_contact_sheet
+web: gunicorn online_contact_sheet:app
