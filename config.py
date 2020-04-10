@@ -10,3 +10,5 @@ class Config(object):
     AWS_REGION = os.environ.get("AWS_REGION")
     S3_BUCKET = os.environ.get("S3_BUCKET")
     S3_URL = os.environ.get("S3_URL")
+    PRIVATE = True
+    PRIVATE_REGISTRATION_KEY = os.environ.get("PRIVATE_REGISTRATION_KEY")

@@ -15,7 +15,7 @@
   {% endif %}
   {% endwith %}
 
-    <form class="dropzone" action="{{ url_for("create_contactsheet") }}" method="post" enctype="multipart/form-data" novalidate>
+    <form action="{{ url_for("create_contactsheet") }}" method="post" enctype="multipart/form-data" novalidate>
       {{ form.hidden_tag() }}
       <div class="form-group">
         {{ form.name.label }}<br>
@@ -23,10 +23,6 @@
         {% for error in form.name.errors %}
         <p class="text-danger"><em>{{ error }}</em></p>
         {% endfor %}
-      </div>
-      <div class="form-group">
-        {{ form.description.label }}<br>
-        {{ form.description(cols="32", rows="10") }}
       </div>
 
       <div class="form-group">

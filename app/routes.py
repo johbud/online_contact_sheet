@@ -48,6 +48,10 @@ def register():
 
     form = RegisterForm()
     if form.validate_on_submit():
+        if Config.PRIVATE:
+            if form.private_key.data != Config.PRIVATE_REGISTRATION_KEY:
+                flash("Invalid invite key.")
+                return render_template("register.html", form=form)
         user = User(username=form.username.data)
         user.set_password(form.password.data)
         db.session.add(user)
@@ -66,7 +70,7 @@ def create_contactsheet():
     form = NewContactsheetForm()
 
     if form.validate_on_submit():
-        sheet = Sheet(name=form.name.data, description=form.description.data, user_id=current_user.get_id())
+        sheet = Sheet(name=form.name.data, user_id=current_user.get_id())
         sheet.set_uuid()
         db.session.add(sheet)
         db.session.flush()
