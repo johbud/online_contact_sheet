@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Register
+{% endblock %}
+
+{% block main %}
+    <h3>Register</h3>
+
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  {% for message in messages %}
+  <p>{{ message }}</p>
+  {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+    <form action="{{ url_for("register") }}" method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="form-group">
+        {{ form.username.label }}<br>
+        {{ form.username(size=32) }}
+        {% for error in form.username.errors %}
+        <p class="text-danger"><em>{{ error }}</em></p>
+        {% endfor %}
+      </div>
+      <div class="form-group">
+        {{ form.password.label }}<br>
+        {{ form.password(size=32) }}
+        {% for error in form.password.errors %}
+        <p class="text-danger"><em>{{ error }}</em></p>
+        {% endfor %}
+      </div>
+      <div class="form-group">
+        {{ form.password_confirm.label }}<br>
+        {{ form.password_confirm(size=32) }}
+        {% for error in form.password_confirm.errors %}
+        <p class="text-danger"><em>{{ error }}</em></p>
+        {% endfor %}
+      </div>
+      
+      {{ form.submit() }}
+    </form>
+{% endblock %}

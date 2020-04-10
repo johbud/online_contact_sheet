@@ -1,0 +1,6 @@
+app.db
+venv
+photos
+__pycache__
+trash
+.flaskenv

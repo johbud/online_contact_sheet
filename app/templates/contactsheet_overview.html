@@ -1,0 +1,27 @@
+{% extends "contactsheet_layout.html" %}
+
+{% block title %}
+    {{ sheet.name }}
+{% endblock %}
+
+{% block main %}
+    <div class="row row-cols-6">
+      {% for image in images %}
+
+      <div class="col m-3 p-2 border border-light">
+        <div class="mx-auto d-block" style="height:200px">
+          <a href="{{ url_root + "sheet/" + sheet.uuid + "/" + loop.index|string }}">
+            <img src="{{ image.path }}" style="height:100%; width:100%; object-fit: contain;" alt="...">
+          </a>
+        </div>
+        <div class="pt-2">
+          <p class="text-center"><a class="text-light" href="{{ url_root + "sheet/" + sheet.uuid + "/" + loop.index|string }}">{{ image.name }}</a></p>
+        </div>
+      </div>
+
+      {% endfor %}
+    </div>
+
+
+
+{% endblock %}
