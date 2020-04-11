@@ -4,6 +4,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField, FileF
 from wtforms.validators import DataRequired, EqualTo, ValidationError
 from app.models import User
 from config import Config
+from app.upload_validator import UploadValidator
 
 class LoginForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired()])
@@ -26,6 +27,6 @@ class RegisterForm(FlaskForm):
 
 class NewContactsheetForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
-    files = MultipleFileField("Images", validators=[FileAllowed(["jpg", "png"], "Only JPEG and PNG images allowed.")])
+    files = MultipleFileField("Images", validators=[UploadValidator(["jpg", "png"])])
     hide_extension = BooleanField("Hide file extensions")
     submit = SubmitField("Create")

@@ -9,6 +9,7 @@ from app.models import User, Sheet, Image
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 from botocore.exceptions import ClientError
+import imghdr
 
 
 @app.route("/")
@@ -78,6 +79,7 @@ def create_contactsheet():
         images = []
 
         for file in form.files.data:
+
             file_url = str(sheet.uuid) + "/" + secure_filename(file.filename)
             if form.hide_extension.data:
                 name = os.path.splitext(file.filename)[0]

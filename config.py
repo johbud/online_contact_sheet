@@ -12,3 +12,4 @@ class Config(object):
     S3_URL = os.environ.get("S3_URL")
     PRIVATE = True
     PRIVATE_REGISTRATION_KEY = os.environ.get("PRIVATE_REGISTRATION_KEY")
+    FILE_SIZE_LIMIT = os.environ.get("FILE_SIZE_LIMIT") or 4 * 1024 * 1024
