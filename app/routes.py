@@ -1,15 +1,17 @@
 import os
-from app import app, db, s3
-from config import Config
 from uuid import uuid4
-from flask import render_template, redirect, request, url_for, flash
-from app.forms import LoginForm, RegisterForm, NewContactsheetForm
-from flask_login import current_user, login_user, logout_user, login_required
-from app.models import User, Sheet, Image
+
+from botocore.exceptions import ClientError
+from flask import flash, redirect, render_template, request, url_for
+from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
-from botocore.exceptions import ClientError
-import imghdr
+
+from app import app, db, s3
+from app.forms import LoginForm, NewContactsheetForm, RegisterForm
+from app.generate_pdf import generate_pdf
+from app.models import Image, Sheet, User
+from config import Config
 
 
 @app.route("/")
@@ -71,7 +73,7 @@ def create_contactsheet():
     form = NewContactsheetForm()
 
     if form.validate_on_submit():
-        sheet = Sheet(name=form.name.data, user_id=current_user.get_id())
+        sheet = Sheet(name=form.name.data, user_id=current_user.get_id(), pdf=form.generate_pdf.data)
         sheet.set_uuid()
         db.session.add(sheet)
         db.session.flush()
@@ -96,7 +98,17 @@ def create_contactsheet():
         for image in images:
             db.session.add(image)
 
+        if form.generate_pdf.data:
+            pdf = generate_pdf(images=images, sheet_name=sheet.name, url_root=Config.S3_URL, orientation=form.pdf_orientation.data)
+            pdf_url = str(sheet.uuid) + "/" + pdf
+            try:
+                s3.upload_file(pdf, Config.S3_BUCKET, pdf_url, ExtraArgs={'ACL': 'public-read'})
+            except ClientError as e:
+                flash(e)
+                return redirect(url_for("create_contactsheet"))
+
         db.session.commit()
+
         flash("Successfully created contact sheet")
 
         return redirect(url_for("index"))
@@ -126,6 +138,14 @@ def delete():
             except ClientError as e:
                 flash("Error while deleting files: " + e)
                 return redirect(url_for("index"))
+        
+        if sheet.pdf:
+            pdf_path = sheet.uuid + "/" + secure_filename(sheet.name) + ".pdf"
+            try:
+                s3.delete_object(Bucket=Config.S3_BUCKET, Key=pdf_path)
+            except ClientError as e:
+                flash("Error while deleting pdf: " + e)
+                return redirect(url_for("index"))
 
         try:
             Image.query.filter_by(sheet_id=sheet.id).delete()
@@ -150,8 +170,13 @@ def sheet_view(sheet_id):
 
     s3_url_root = Config.S3_URL
     app_url_root = request.url_root
+    
+    if sheet.pdf:
+        pdf_name = secure_filename(sheet.name) + ".pdf"
+    else:
+        pdf_name = None
 
-    return render_template("contactsheet_main.html", images=images, sheet=sheet, s3_url_root=s3_url_root, app_url_root=app_url_root, active_index=1)
+    return render_template("contactsheet_main.html", images=images, sheet=sheet, s3_url_root=s3_url_root, app_url_root=app_url_root, active_index=1, pdf_name=pdf_name)
 
 @app.route("/sheet/<sheet_id>/<selected_index>")
 def sheet_view_selected(sheet_id, selected_index):
@@ -165,9 +190,14 @@ def sheet_view_selected(sheet_id, selected_index):
     s3_url_root = Config.S3_URL
     app_url_root = request.url_root
 
+    if sheet.pdf:
+        pdf_name = secure_filename(sheet.name) + ".pdf"
+    else:
+        pdf_name = None
+
     active_index = int(selected_index)
 
-    return render_template("contactsheet_main.html", images=images, sheet=sheet, s3_url_root=s3_url_root, app_url_root=app_url_root, active_index=active_index)
+    return render_template("contactsheet_main.html", images=images, sheet=sheet, s3_url_root=s3_url_root, app_url_root=app_url_root, active_index=active_index, pdf_name=pdf_name)
 
 
 @app.route("/sheet/overview/<sheet_id>")
@@ -181,8 +211,13 @@ def sheet_overview(sheet_id):
 
     s3_url_root = Config.S3_URL
     app_url_root = request.url_root
+    
+    if sheet.pdf:
+        pdf_name = secure_filename(sheet.name) + ".pdf"
+    else:
+        pdf_name = None
 
-    return render_template("contactsheet_overview.html", images=images, sheet=sheet, s3_url_root=s3_url_root, app_url_root=app_url_root)
+    return render_template("contactsheet_overview.html", images=images, sheet=sheet, s3_url_root=s3_url_root, app_url_root=app_url_root, pdf_name=pdf_name)
 
 @app.route("/logout")
 def logout():

@@ -22,10 +22,15 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Name</th><th>Link</th><th></th>
+          <th></th><th>Name</th><th>Link</th><th></th>
         </tr>
         {% for sheet in sheets %}
         <tr>
+          <td>
+            <script>
+              document.write(moment("{{ sheet.timestamp.strftime('%Y-%m-%d %H:%MZ') }}").format("YYYY-MM-DD HH:mm "));
+            </script>
+          </td>
           <td>{{ sheet.name }}</td>
           <td><a href="{{ url_root + "sheet/" + sheet.uuid }}" id="link_{{ loop.index }}">{{ url_root + "sheet/" + sheet.uuid }}</a></td>
           <td><button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" data-uuid="{{ sheet.uuid }}" data-name="{{ sheet.name }}">Delete</button></td>

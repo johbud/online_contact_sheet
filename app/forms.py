@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileRequired, FileAllowed
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, FileField, MultipleFileField, TextAreaField
+from wtforms import StringField, PasswordField, BooleanField, RadioField, SubmitField, FileField, MultipleFileField, TextAreaField
 from wtforms.validators import DataRequired, EqualTo, ValidationError
 from app.models import User
 from config import Config
@@ -29,4 +29,6 @@ class NewContactsheetForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
     files = MultipleFileField("Images", validators=[UploadValidator(["jpg", "png"])])
     hide_extension = BooleanField("Hide file extensions")
+    generate_pdf = BooleanField("Generate PDF")
+    pdf_orientation = RadioField("PDF Orientation", choices=[("L","Landscape"),("P","Portrait")], default="L")
     submit = SubmitField("Create")

@@ -22,6 +22,9 @@
         <div class="navbar-nav">
           <a class="nav-item nav-link" href="{{ app_url_root + 'sheet/' + sheet.uuid }}">Image</a>
           <a class="nav-item nav-link" href="{{ app_url_root + 'sheet/overview/' + sheet.uuid }}">Overview</a>
+          {% if pdf_name %}
+          <a class="nav-item nav-link" href="{{ s3_url_root + sheet.uuid + '/' + pdf_name }}">Download PDF</a>
+          {% endif %}
         </div>
     </nav>
 
