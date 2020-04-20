@@ -1,8 +1,10 @@
-from fpdf import FPDF
-from werkzeug.utils import secure_filename
-from PIL import Image
-import requests
+import os
 from io import BytesIO
+
+import requests
+from fpdf import FPDF
+from PIL import Image
+from werkzeug.utils import secure_filename
 
 
 def generate_pdf(images, sheet_name, url_root, orientation="P"):
@@ -13,9 +15,6 @@ def generate_pdf(images, sheet_name, url_root, orientation="P"):
 
     for image in images:
 
-        response = requests.get(url_root + image.path)
-
-        im = Image.open(BytesIO(response.content))
         pdf.add_page()
         pdf.set_x(0)
 
@@ -26,10 +25,19 @@ def generate_pdf(images, sheet_name, url_root, orientation="P"):
             page_width = 297
             page_height = 210
 
-        width, height = fit_image(im, page_width, page_height)
-        x, y = center_image(page_width, page_height, width, height)
+        response = requests.get(url_root + image.path)
+        filename = image.path.split("/", 1)[1]
 
-        pdf.image(url_root + image.path, x=x, y=y, w=width, h=height)
+        with Image.open(BytesIO(response.content)) as im:
+
+            width, height = fit_image(im, page_width, page_height)
+            x, y = center_image(page_width, page_height, width, height)
+            im.save(filename, format=im.format)
+
+            pdf.image(filename, x=x, y=y, w=width, h=height)
+
+            # Clean-up
+            os.remove(filename)
 
         pdf.set_xy((page_width - 180) / 2, page_height - 20)
         pdf.cell(180, 15, txt=image.name, align="C")

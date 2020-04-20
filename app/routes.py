@@ -87,7 +87,7 @@ def create_contactsheet():
                 name = os.path.splitext(file.filename)[0]
             else:
                 name = file.filename
-
+            
             try:
                 s3.upload_fileobj(file.stream, Config.S3_BUCKET, file_url, ExtraArgs={'ACL': 'public-read'})
             except ClientError as e:
@@ -99,10 +99,12 @@ def create_contactsheet():
             db.session.add(image)
 
         if form.generate_pdf.data:
+
             pdf = generate_pdf(images=images, sheet_name=sheet.name, url_root=Config.S3_URL, orientation=form.pdf_orientation.data)
             pdf_url = str(sheet.uuid) + "/" + pdf
             try:
                 s3.upload_file(pdf, Config.S3_BUCKET, pdf_url, ExtraArgs={'ACL': 'public-read'})
+                os.remove(pdf)
             except ClientError as e:
                 flash(e)
                 return redirect(url_for("create_contactsheet"))
