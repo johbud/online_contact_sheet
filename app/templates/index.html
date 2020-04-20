@@ -22,7 +22,7 @@
     <table class="table">
       <thead>
         <tr>
-          <th></th><th>Name</th><th>Link</th><th></th>
+          <th>Created</th><th>Name</th><th>URL<th></th><th></th>
         </tr>
         {% for sheet in sheets %}
         <tr>
@@ -31,8 +31,9 @@
               document.write(moment("{{ sheet.timestamp.strftime('%Y-%m-%d %H:%MZ') }}").format("YYYY-MM-DD HH:mm "));
             </script>
           </td>
-          <td>{{ sheet.name }}</td>
-          <td><a href="{{ url_root + "sheet/" + sheet.uuid }}" id="link_{{ loop.index }}">{{ url_root + "sheet/" + sheet.uuid }}</a></td>
+          <td><a href="{{ url_root + "sheet/" + sheet.uuid }}" id="link_{{ loop.index }}">{{ sheet.name }}</a></td>
+          <td><input class="form-control" type="text" value="{{ url_root + "sheet/" + sheet.uuid }}" size="10" id="{{ loop.index }}"></td>
+        <td><button type="button" class="btn btn-primary btn-sm" onclick="copyToClipboard( '{{ loop.index }}' )">Copy to clipboard</button></td>
           <td><button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" data-uuid="{{ sheet.uuid }}" data-name="{{ sheet.name }}">Delete</button></td>
         </tr>
         {% endfor %}
@@ -64,8 +65,17 @@
     </div>
 
     <script type="text/javascript">
-      $( document ).ready(function(){
 
+      function copyToClipboard(inputId)
+      {
+        var copyText = document.getElementById(inputId);
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); 
+        document.execCommand("copy");
+      }
+
+      $( document ).ready(function(){
+        
         $("#deleteModal").on("show.bs.modal", function (event) {
           var button = $(event.relatedTarget);
           var name = button.data("name");

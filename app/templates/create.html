@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block main %}
+<div class="col-4">
     <h3>Upload file</h3>
 
   {% with messages = get_flashed_messages() %}
@@ -34,29 +35,33 @@
       </div>
 
       <div class="form-group">
-        {{ form.generate_pdf.label }}
-        {{ form.generate_pdf() }}
-        {% for error in form.generate_pdf.errors %}
-        <p class="text-danger"><em>{{ error }}</em></p>
-        {% endfor %}
-      </div>
-
-      <div class="form-group">
-        {{ form.pdf_orientation.label }}<br>
-        {% for subfield in form.pdf_orientation %}
-          
-          {{ subfield }}
-          {{ subfield.label }}
-          <br>
-        {% endfor %}
-      </div>
-
-      <div class="form-group">
         {{ form.hide_extension.label }}
         {{ form.hide_extension() }}
       </div>
 
+      <div class="border p-3 bg-light">
+        <div class="form-group">
+          {{ form.generate_pdf.label }}
+          {{ form.generate_pdf() }}
+          {% for error in form.generate_pdf.errors %}
+          <p class="text-danger"><em>{{ error }}</em></p>
+          {% endfor %}
+        </div>
+
+        <div class="form-group">
+          {{ form.pdf_orientation.label }}<br>
+          {% for subfield in form.pdf_orientation %}
+            
+            {{ subfield }}
+            {{ subfield.label }}
+            <br>
+          {% endfor %}
+        </div>
+      </div>
+      <br>
+
       {{ form.submit() }}
     </form>
+    </div>
 
 {% endblock %}

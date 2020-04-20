@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block main %}
+<div class="col-4">
     <h3>Sign in</h3>
 
   {% with messages = get_flashed_messages() %}
@@ -36,8 +37,10 @@
       </div>
       {{ form.submit() }}
     </form>
+    <br>
 
-    <div class="border">
+    <div class="border p-3 bg-light">
     <p>New user? <a href=" {{ url_for("register") }}">Click here to register</a></p>
     </div>
+  </div>
 {% endblock %}
