@@ -74,28 +74,3 @@ def center_image(page_width, page_height, width, height):
     y = (page_height - height) / 2
 
     return x, y
-
-"""
-        if orientation == "P":
-            page_width = 210
-            page_height = 297
-            if (im.height / im.width) * 180 > 270:
-                x = (page_width - ((270 / im.height) * im.width)) / 2 
-                y = (page_height - 270) / 2
-                pdf.image(url_root + image.path, x=x, h=270)
-            else:
-                x = (page_width - 180) / 2 
-                y = (page_height - ((180 /im.width) * im.height)) / 2
-                pdf.image(url_root + image.path, x=x, w=180)
-        else:
-            page_width = 297
-            page_height = 210
-            if (im.width / im.height) * 160 > 270:
-                x = (page_width - 270) / 2
-                y = 
-                pdf.image(url_root + image.path, x=x, w=270)
-            else:
-                x = (page_width - ((180 / im.height) * im.width)) / 2
-                y = (page_height - 180) / 2  
-                pdf.image(url_root + image.path, x=x, h=180)
-"""

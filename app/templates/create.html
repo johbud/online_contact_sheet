@@ -27,7 +27,7 @@
       </div>
 
       <div class="form-group">
-        {{ form.files.label }}<br>
+        {{ form.files.label }} <i>(Maximum size per file: {{ max_file_size }})</i><br>
         {{ form.files(id_="file_input") }}
         {% for error in form.files.errors %}
         <p class="text-danger"><em>{{ error }}</em></p>

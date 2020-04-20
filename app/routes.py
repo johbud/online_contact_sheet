@@ -11,6 +11,7 @@ from app import app, db, s3
 from app.forms import LoginForm, NewContactsheetForm, RegisterForm
 from app.generate_pdf import generate_pdf
 from app.models import Image, Sheet, User
+from app.size_of import size_of
 from config import Config
 
 
@@ -115,7 +116,7 @@ def create_contactsheet():
 
         return redirect(url_for("index"))
 
-    return render_template("/create.html", form=form)
+    return render_template("/create.html", form=form, max_file_size=size_of(Config.FILE_SIZE_LIMIT))
 
 @app.route("/delete", methods=["GET", "POST"])
 @login_required
