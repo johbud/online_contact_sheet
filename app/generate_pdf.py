@@ -7,7 +7,7 @@ from PIL import Image
 from werkzeug.utils import secure_filename
 
 
-def generate_pdf(images, sheet_name, url_root, orientation="P"):
+def generate_pdf(images, sheet_name, url_root, orientation="P", progress=None):
 
     pdf = FPDF(orientation=orientation,unit="mm",format="A4")
     pdf.set_font("Helvetica", size=12)
@@ -41,6 +41,8 @@ def generate_pdf(images, sheet_name, url_root, orientation="P"):
 
         pdf.set_xy((page_width - 180) / 2, page_height - 20)
         pdf.cell(180, 15, txt=image.name, align="C")
+        if progress:
+                progress.update_progress()
 
     pdf_name = secure_filename(sheet_name+".pdf")
     pdf.output(name=pdf_name)

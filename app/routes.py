@@ -1,17 +1,21 @@
 import os
+import time
+import random
+import redis
 from uuid import uuid4
 
 from botocore.exceptions import ClientError
-from flask import flash, redirect, render_template, request, url_for
+from flask import flash, redirect, render_template, request, url_for, Response, session
 from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 
-from app import app, db, s3
+from app import app, db, s3, redis_db
 from app.forms import LoginForm, NewContactsheetForm, RegisterForm
 from app.generate_pdf import generate_pdf
 from app.models import Image, Sheet, User
 from app.size_of import size_of
+from app.upload_thread import Upload_thread
 from config import Config
 
 
@@ -66,57 +70,32 @@ def register():
 
     return render_template("register.html", form=form)
 
-
+@app.route("/progress/<int:thread_id>")
+def progress(thread_id):
+    def progress_generator(thread_id):
+        while int(float(redis_db.get(thread_id).decode("utf-8"))) < 100:
+            yield "data:" + redis_db.get(thread_id).decode("utf-8") + "\n\n"
+    return Response(progress_generator(thread_id), mimetype="text/event-stream")
+  
 @app.route("/create", methods=["GET", "POST"])
 @login_required
 def create_contactsheet():
 
     form = NewContactsheetForm()
+    thread_id = current_user.get_id()
 
+    redis_db.set(thread_id, "0")
     if form.validate_on_submit():
-        sheet = Sheet(name=form.name.data, user_id=current_user.get_id(), pdf=form.generate_pdf.data)
-        sheet.set_uuid()
-        db.session.add(sheet)
-        db.session.flush()
+        upload_thread = Upload_thread(form, current_user.get_id(), thread_id)
+        upload_thread.start()
 
-        images = []
-
-        for file in form.files.data:
-
-            file_url = str(sheet.uuid) + "/" + secure_filename(file.filename)
-            if form.hide_extension.data:
-                name = os.path.splitext(file.filename)[0]
-            else:
-                name = file.filename
-            
-            try:
-                s3.upload_fileobj(file.stream, Config.S3_BUCKET, file_url, ExtraArgs={'ACL': 'public-read'})
-            except ClientError as e:
-                flash(e)
-                return redirect(url_for("create_contactsheet"))
-            images.append(Image(name=name, path=file_url, sheet_id=sheet.id, user_id=current_user.get_id()))
-
-        for image in images:
-            db.session.add(image)
-
-        if form.generate_pdf.data:
-
-            pdf = generate_pdf(images=images, sheet_name=sheet.name, url_root=Config.S3_URL, orientation=form.pdf_orientation.data)
-            pdf_url = str(sheet.uuid) + "/" + pdf
-            try:
-                s3.upload_file(pdf, Config.S3_BUCKET, pdf_url, ExtraArgs={'ACL': 'public-read'})
-                os.remove(pdf)
-            except ClientError as e:
-                flash(e)
-                return redirect(url_for("create_contactsheet"))
-
-        db.session.commit()
-
+        while int(float(redis_db.get(thread_id).decode("utf-8"))) < 100:
+            print(redis_db.get(thread_id).decode("utf-8"))
+            time.sleep(0.1)
         flash("Successfully created contact sheet")
-
         return redirect(url_for("index"))
 
-    return render_template("/create.html", form=form, max_file_size=size_of(Config.FILE_SIZE_LIMIT))
+    return render_template("/create.html", form=form, max_file_size=size_of(Config.FILE_SIZE_LIMIT), thread_id=thread_id)
 
 @app.route("/delete", methods=["GET", "POST"])
 @login_required
