@@ -1,3 +1,4 @@
+import redis
 from flask import Flask
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
@@ -14,5 +15,6 @@ login = LoginManager(app)
 login.login_view = "login"
 bootstrap = Bootstrap(app)
 s3 = boto3.client("s3", region_name=Config.AWS_REGION, aws_access_key_id=Config.AWS_ACCESS_KEY, aws_secret_access_key=Config.AWS_SECRET_ACCESS_KEY)
+redis_db = redis.Redis()
 
 from app import routes, models

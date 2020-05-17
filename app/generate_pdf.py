@@ -7,7 +7,7 @@ from PIL import Image
 from werkzeug.utils import secure_filename
 
 
-def generate_pdf(images, sheet_name, url_root, orientation="P"):
+def generate_pdf(images, sheet_name, url_root, orientation="P", progress=None):
 
     pdf = FPDF(orientation=orientation,unit="mm",format="A4")
     pdf.set_font("Helvetica", size=12)
@@ -41,6 +41,8 @@ def generate_pdf(images, sheet_name, url_root, orientation="P"):
 
         pdf.set_xy((page_width - 180) / 2, page_height - 20)
         pdf.cell(180, 15, txt=image.name, align="C")
+        if progress:
+                progress.update_progress()
 
     pdf_name = secure_filename(sheet_name+".pdf")
     pdf.output(name=pdf_name)
@@ -60,13 +62,22 @@ def fit_image(image, page_width, page_height, x_margin=20, y_margin=20):
         width = max_width
         height = width * ratio
 
+    if ratio == 1.0:
+        if max_height > max_width:
+            width = max_width
+            height = max_width
+        else:
+            width = max_height
+            height = max_height
+        return width, height
+
     if width > max_width:
         width = max_width
         height = (max_width / width) * height
     if height > max_height:
         height = max_height
-        width = (max_height / height) * width        
-
+        width = (max_height / height) * width    
+        
     return width, height
 
 def center_image(page_width, page_height, width, height):
