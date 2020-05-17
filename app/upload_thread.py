@@ -26,10 +26,13 @@ class Upload_thread(threading.Thread):
         self.thread_id = thread_id
         super().__init__()
 
-    def update_progress(self):
-        self.progress += 1
-        self.percentage = self.progress/self.chunks * 100
-        redis_db.set(self.thread_id, self.percentage)
+    def update_progress(self, error=None):
+        if error:
+            redis_db.set(self.thread_id, error)
+        else:
+            self.progress += 1
+            self.percentage = self.progress/self.chunks * 100
+            redis_db.set(self.thread_id, self.percentage)
 
     def run(self):
         if self.form.generate_pdf.data:
@@ -54,9 +57,8 @@ class Upload_thread(threading.Thread):
             try:
                 s3.upload_fileobj(file.stream, Config.S3_BUCKET, file_url, ExtraArgs={'ACL': 'public-read'})
             except ClientError as e:
-                print(e)
-                #flash(e)
-                #return redirect(url_for("create_contactsheet"))
+                self.update_progress(error=e)
+                return
             images.append(Image(name=name, path=file_url, sheet_id=sheet.id, user_id=self.user_id))
             self.update_progress()
 
@@ -64,15 +66,19 @@ class Upload_thread(threading.Thread):
             db.session.add(image)
 
         if self.form.generate_pdf.data:
-            pdf = generate_pdf(images=images, sheet_name=sheet.name, url_root=Config.S3_URL, orientation=self.form.pdf_orientation.data, progress=self)
-            pdf_url = str(sheet.uuid) + "/" + pdf
+            try:
+                pdf = generate_pdf(images=images, sheet_name=sheet.name, url_root=Config.S3_URL, orientation=self.form.pdf_orientation.data, progress=self)
+                pdf_url = str(sheet.uuid) + "/" + pdf
+            except:
+                self.update_progress(error="Could not generate pdf.")
+                return
+            
             try:
                 s3.upload_file(pdf, Config.S3_BUCKET, pdf_url, ExtraArgs={'ACL': 'public-read'})
                 os.remove(pdf)
             except ClientError as e:
-                print(e)
-                #flash(e)
-                #return redirect(url_for("create_contactsheet"))
+                self.update_progress(error=e)
+                return
             self.update_progress()
 
         db.session.commit()

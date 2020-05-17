@@ -9,10 +9,18 @@
 {% block main %}
 
 
-    {% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages(category_filter=["message"]) %}
     {% if messages %}
     {% for message in messages %}
-    <p>{{ message }}</p>
+    <div class="alert alert-primary">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    {% with errors = get_flashed_messages(category_filter=["error"]) %}
+    {% if errors %}
+    {% for error in errors %}
+    <div class="alert alert-danger">{{ error }}</div>
     {% endfor %}
     {% endif %}
     {% endwith %}

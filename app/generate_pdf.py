@@ -62,13 +62,22 @@ def fit_image(image, page_width, page_height, x_margin=20, y_margin=20):
         width = max_width
         height = width * ratio
 
+    if ratio == 1.0:
+        if max_height > max_width:
+            width = max_width
+            height = max_width
+        else:
+            width = max_height
+            height = max_height
+        return width, height
+
     if width > max_width:
         width = max_width
         height = (max_width / width) * height
     if height > max_height:
         height = max_height
-        width = (max_height / height) * width        
-
+        width = (max_height / height) * width    
+        
     return width, height
 
 def center_image(page_width, page_height, width, height):

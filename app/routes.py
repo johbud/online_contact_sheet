@@ -15,6 +15,7 @@ from app.forms import LoginForm, NewContactsheetForm, RegisterForm
 from app.generate_pdf import generate_pdf
 from app.models import Image, Sheet, User
 from app.size_of import size_of
+from app.helpers import is_number
 from app.upload_thread import Upload_thread
 from config import Config
 
@@ -38,7 +39,7 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
-            flash("Invalid username or password")
+            flash("Invalid username or password", "error")
             return redirect(url_for("login"))
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get("next")
@@ -58,14 +59,14 @@ def register():
     if form.validate_on_submit():
         if Config.PRIVATE:
             if form.private_key.data != Config.PRIVATE_REGISTRATION_KEY:
-                flash("Invalid invite key.")
+                flash("Invalid invite key.", "error")
                 return render_template("register.html", form=form)
         user = User(username=form.username.data)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
 
-        flash("You are now registered.")
+        flash("You are now registered.", "message")
         return redirect(url_for("login"))
 
     return render_template("register.html", form=form)
@@ -73,10 +74,15 @@ def register():
 @app.route("/progress/<int:thread_id>")
 def progress(thread_id):
     def progress_generator(thread_id):
-        while int(float(redis_db.get(thread_id).decode("utf-8"))) < 100:
-            yield "data:" + redis_db.get(thread_id).decode("utf-8") + "\n\n"
+        while True:
+            status = redis_db.get(thread_id).decode("utf-8")
+            if is_number(status):
+                yield "data:" + status + "\n\n"
+            else:
+                return "data:" + status + "\n\n"
+
     return Response(progress_generator(thread_id), mimetype="text/event-stream")
-  
+
 @app.route("/create", methods=["GET", "POST"])
 @login_required
 def create_contactsheet():
@@ -89,11 +95,17 @@ def create_contactsheet():
         upload_thread = Upload_thread(form, current_user.get_id(), thread_id)
         upload_thread.start()
 
-        while int(float(redis_db.get(thread_id).decode("utf-8"))) < 100:
-            print(redis_db.get(thread_id).decode("utf-8"))
-            time.sleep(0.1)
-        flash("Successfully created contact sheet")
-        return redirect(url_for("index"))
+        while True:
+            status = redis_db.get(thread_id).decode("utf-8")
+            if is_number(status):
+                if float(status) >= 100.0:
+                    flash("Successfully created contact sheet", "message")
+                    return redirect(url_for("index"))
+                else:
+                    time.sleep(0.2)
+            else:
+                flash(redis_db.get(thread_id).decode("utf-8"), "error")
+                return redirect(url_for("index"))
 
     return render_template("/create.html", form=form, max_file_size=size_of(Config.FILE_SIZE_LIMIT), thread_id=thread_id)
 
@@ -105,20 +117,20 @@ def delete():
         uuid = request.form.get("sheet_uuid")
         sheet = Sheet.query.filter_by(uuid=uuid).first()
         if not sheet:
-            flash("Sheet not found. " + uuid)
+            flash("Sheet not found. " + uuid, "error")
             return redirect(url_for("index"))
 
         images = Image.query.filter_by(sheet_id=sheet.id).all()
 
         if int(sheet.user_id) != int(current_user.get_id()):
-            flash("You do not have permission to delete this sheet.")
+            flash("You do not have permission to delete this sheet.", "error")
             return redirect(url_for("index"))
 
         for image in images:
             try:
                 s3.delete_object(Bucket=Config.S3_BUCKET, Key=image.path)
             except ClientError as e:
-                flash("Error while deleting files: " + e)
+                flash("Error while deleting files: " + e, "error")
                 return redirect(url_for("index"))
         
         if sheet.pdf:
@@ -126,7 +138,7 @@ def delete():
             try:
                 s3.delete_object(Bucket=Config.S3_BUCKET, Key=pdf_path)
             except ClientError as e:
-                flash("Error while deleting pdf: " + e)
+                flash("Error while deleting pdf: " + e, "error")
                 return redirect(url_for("index"))
 
         try:
@@ -134,10 +146,10 @@ def delete():
             Sheet.query.filter_by(uuid=uuid).delete()
             db.session.commit()
         except:
-            flash("Database error while deleting sheet.")
+            flash("Database error while deleting sheet.", "error")
             return redirect(url_for("index"))
 
-        flash("Successfully deleted " + sheet.name)
+        flash("Successfully deleted " + sheet.name, "message")
 
     return redirect(url_for("index"))
 
