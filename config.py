@@ -13,3 +13,4 @@ class Config(object):
     PRIVATE = True
     PRIVATE_REGISTRATION_KEY = os.environ.get("PRIVATE_REGISTRATION_KEY")
     FILE_SIZE_LIMIT = os.environ.get("FILE_SIZE_LIMIT") or 2 * 1024 * 1024
+    REDIS_URL = os.environ.get("REDIS_URL") or None
