@@ -15,6 +15,9 @@ login = LoginManager(app)
 login.login_view = "login"
 bootstrap = Bootstrap(app)
 s3 = boto3.client("s3", region_name=Config.AWS_REGION, aws_access_key_id=Config.AWS_ACCESS_KEY, aws_secret_access_key=Config.AWS_SECRET_ACCESS_KEY)
-redis_db = redis.Redis()
+if Config.REDIS_URL:
+    redis_db = redis.from_url(Config.REDIS_URL)
+else:
+    redis_db = redis.Redis()
 
 from app import routes, models
