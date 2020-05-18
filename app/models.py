@@ -31,6 +31,7 @@ class Sheet(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     images = db.relationship("Image", backref="sheet", lazy="dynamic")
+    show_name = db.Column(db.Boolean)
     pdf = db.Column(db.Boolean)
 
     def set_uuid(self):

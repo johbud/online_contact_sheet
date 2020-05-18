@@ -40,7 +40,7 @@ class Upload_thread(threading.Thread):
         else:
             self.chunks = len(self.form.files.data)
 
-        sheet = Sheet(name=self.form.name.data, user_id=self.user_id, pdf=self.form.generate_pdf.data)
+        sheet = Sheet(name=self.form.name.data, user_id=self.user_id, pdf=self.form.generate_pdf.data, show_name=self.form.show_name.data)
         sheet.set_uuid()
         db.session.add(sheet)
         db.session.flush()
@@ -67,7 +67,7 @@ class Upload_thread(threading.Thread):
 
         if self.form.generate_pdf.data:
             try:
-                pdf = generate_pdf(images=images, sheet_name=sheet.name, url_root=Config.S3_URL, orientation=self.form.pdf_orientation.data, progress=self)
+                pdf = generate_pdf(images=images, sheet_name=sheet.name, url_root=Config.S3_URL, orientation=self.form.pdf_orientation.data, progress=self, show_name=self.form.show_name.data)
                 pdf_url = str(sheet.uuid) + "/" + pdf
             except:
                 self.update_progress(error="Could not generate pdf.")

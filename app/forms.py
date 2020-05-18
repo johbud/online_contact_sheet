@@ -28,6 +28,7 @@ class RegisterForm(FlaskForm):
 class NewContactsheetForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
     files = MultipleFileField("Images", validators=[UploadValidator(["jpg", "png"])])
+    show_name = BooleanField("Show file names")
     hide_extension = BooleanField("Hide file extensions")
     generate_pdf = BooleanField("Generate PDF")
     pdf_orientation = RadioField("PDF Orientation", choices=[("L","Landscape"),("P","Portrait")], default="L")

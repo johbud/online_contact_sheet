@@ -15,7 +15,9 @@
           </a>
         </div>
         <div class="pt-2">
+          {% if sheet.show_name %}
           <p class="text-center"><a class="text-light" href="{{ app_url_root + "sheet/" + sheet.uuid + "/" + loop.index|string }}">{{ image.name }}</a></p>
+          {% endif %}
         </div>
       </div>
 

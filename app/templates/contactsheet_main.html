@@ -17,9 +17,11 @@
         <div class="container text-center">
 
           <img src="{{ s3_url_root + image.path }}" class="mx-auto d-block vh-100 img-fluid" style="object-fit: contain" alt="...">
+          {% if sheet.show_name %}
           <div class="carousel-caption d-none d-md-block">
             <p><span class="bg-dark p-2">{{ image.name }}</span></p>
           </div>
+          {% endif %}
 
         </div>
 
